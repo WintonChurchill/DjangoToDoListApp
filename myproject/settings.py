@@ -23,10 +23,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-79bp1)l1h7ih@%*e-f70mranmwb^2m3^kkcl3pa6cx0x_-#2)7'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+if 'PYTHONPATH' in os.environ:
+    Debug = False
+    # Debug = False
+    ALLOWED_HOSTS = ['.ap-southeast-2.elasticbeanstalk.com']
+else:
+    # SECURITY WARNING: don't run with debug turned on in production!
+    DEBUG = True
+    ALLOWED_HOSTS = []
 
-ALLOWED_HOSTS = []
 
 
 # Application definition
