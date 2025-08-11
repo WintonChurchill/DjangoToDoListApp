@@ -99,7 +99,7 @@ else:
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
             'NAME': 'todoapp_db',
             'USER': 'postgres',
-            'PASSWORD': '1',#'This is the password for your local postgres pgadmin'
+            'PASSWORD': '1',#'This is the password for your local postgres pgadmin
             'HOST': '', #'Localhost is empty'
             'PORT':'', #Assumes default as 5432
         },
