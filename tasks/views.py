@@ -2,7 +2,39 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse, reverse_lazy
 from .models import Task
 from .forms import TaskForm
+from django.shortcuts import render, redirect, get_object_or_404
 
+from django.urls import reverse, reverse_lazy
+
+from rest_framework import generics, status
+
+from rest_framework.decorators import api_view, permission_classes
+
+from rest_framework.response import Response
+
+from rest_framework.permissions import IsAuthenticated
+
+from rest_framework.authentication import BasicAuthentication, SessionAuthentication
+
+from rest_framework_simplejwt.authentication import JWTAuthentication
+ 
+from .models import Task
+
+from .forms import TaskForm
+
+from .serializers import (
+
+    TaskSerializer, 
+
+    TaskCreateSerializer, 
+
+    TaskUpdateSerializer, 
+
+    TaskListSerializer, 
+
+    TaskDetailSerializer
+
+)
 # Create your views here.
 # Functional based view
 # Create a task
