@@ -82,27 +82,137 @@ from .serializers import (
 #     task_obj.delete()
 #     return redirect(reverse("tasks:task_list"))
 
-# Class Based Views
-from django.views.generic import ListView, DetailView, \
-    CreateView, UpdateView, DeleteView
+#api changes
 
-class TaskListView(ListView):
-    model = Task
-    context_object_name = 'tasks'
+# # Class Based Views
+# from django.views.generic import ListView, DetailView, \
+#     CreateView, UpdateView, DeleteView
 
-class TaskDetailView(DetailView):
-    model = Task
+# class TaskListView(ListView):
+#     model = Task
+#     context_object_name = 'tasks'
 
-class TaskCreateView(CreateView):
-    model = Task
-    form_class = TaskForm
-    success_url = reverse_lazy('tasks:task_list')
+# class TaskDetailView(DetailView):
+#     model = Task
 
-class TaskUpdateView(UpdateView):
-    model = Task
-    form_class = TaskForm
-    success_url = reverse_lazy('tasks:task_list')
+# class TaskCreateView(CreateView):
+#     model = Task
+#     form_class = TaskForm
+#     success_url = reverse_lazy('tasks:task_list')
 
-class TaskDeleteView(DeleteView):
-    model = Task
-    success_url = reverse_lazy('tasks:task_list')
+# class TaskUpdateView(UpdateView):
+#     model = Task
+#     form_class = TaskForm
+#     success_url = reverse_lazy('tasks:task_list')
+
+# class TaskDeleteView(DeleteView):
+#     model = Task
+#     success_url = reverse_lazy('tasks:task_list')
+
+
+
+# ========================
+# REST API CLASS-BASED VIEWS
+# ========================
+ 
+class TaskListCreateAPIView(generics.ListCreateAPIView):
+    """
+    API endpoint for listing all tasks and creating new tasks.
+    GET /api/tasks/ - List all tasks
+    POST /api/tasks/ - Create a new task
+    """
+    queryset = Task.objects.all()
+    authentication_classes = [JWTAuthentication, BasicAuthentication, SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return TaskCreateSerializer
+        return TaskListSerializer
+    def get_queryset(self):
+        """
+        Optionally filter tasks by status via query parameter
+        Example: /api/tasks/?status=u (for unstarted tasks)
+        """
+        queryset = Task.objects.all().order_by('-id')
+        status_param = self.request.query_params.get('status', None)
+        if status_param is not None:
+            queryset = queryset.filter(status=status_param)
+        return queryset
+ 
+ 
+class TaskDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    API endpoint for retrieving, updating, and deleting a specific task.
+    GET /api/tasks/{id}/ - Retrieve a specific task
+    PUT /api/tasks/{id}/ - Update a specific task (full update)
+    PATCH /api/tasks/{id}/ - Partially update a specific task
+    DELETE /api/tasks/{id}/ - Delete a specific task
+    """
+    queryset = Task.objects.all()
+    authentication_classes = [JWTAuthentication, BasicAuthentication, SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+    def get_serializer_class(self):
+        if self.request.method in ['PUT', 'PATCH']:
+            return TaskUpdateSerializer
+        return TaskDetailSerializer
+ 
+ 
+class TaskListAPIView(generics.ListAPIView):
+    """
+    API endpoint for listing all tasks (read-only).
+    GET /api/tasks/list/ - List all tasks
+    """
+    queryset = Task.objects.all().order_by('-id')
+    serializer_class = TaskListSerializer
+    authentication_classes = [JWTAuthentication, BasicAuthentication, SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+        """
+        Optionally filter tasks by status via query parameter
+        Example: /api/tasks/list/?status=u (for unstarted tasks)
+        """
+        queryset = Task.objects.all().order_by('-id')
+        status_param = self.request.query_params.get('status', None)
+        if status_param is not None:
+            queryset = queryset.filter(status=status_param)
+        return queryset
+ 
+ 
+class TaskCreateAPIView(generics.CreateAPIView):
+    """
+    API endpoint for creating new tasks.
+    POST /api/tasks/create/ - Create a new task
+    """
+    queryset = Task.objects.all()
+    serializer_class = TaskCreateSerializer
+    authentication_classes = [JWTAuthentication, BasicAuthentication, SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+ 
+ 
+class TaskUpdateAPIView(generics.UpdateAPIView):
+    """
+    API endpoint for updating existing tasks.
+    PUT /api/tasks/{id}/update/ - Update a specific task (full update)
+    PATCH /api/tasks/{id}/update/ - Partially update a specific task
+    """
+    queryset = Task.objects.all()
+    serializer_class = TaskUpdateSerializer
+    authentication_classes = [JWTAuthentication, BasicAuthentication, SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+ 
+ 
+class TaskDeleteAPIView(generics.DestroyAPIView):
+    """
+    API endpoint for deleting tasks.
+    DELETE /api/tasks/{id}/delete/ - Delete a specific task
+    """
+    queryset = Task.objects.all()
+    authentication_classes = [JWTAuthentication, BasicAuthentication, SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(
+            {'message': f'Task "{instance.name}" has been deleted successfully.'}, 
+            status=status.HTTP_200_OK
+        )
